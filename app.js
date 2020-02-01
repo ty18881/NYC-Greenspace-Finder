@@ -154,7 +154,7 @@ const makeGreenspaceTable = (element) => {
     $newBody.append($newRow);
 
     // append our dynamically generated content to the table div
-    $tableDiv.append($newBody);
+    $newTable.append($newBody);
 
 }
 
