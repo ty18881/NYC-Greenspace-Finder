@@ -12,18 +12,23 @@ $(()=>{
  // English units - this is in miles.
  const radiusOfEarth = 3958.8;
 
- const maxRadius = 1;
+ const maxRadius = 0.5;
 
  // empty array to capture the closest green space
  // initializing up here because I'll need to use the contents in several places
- var closeSpaces;
+ let closeSpaces;
 
+ let selectedBorough = "B";
 
  // these will hold items eventually written to the DOM
  let $tableDiv;
  let $newTable;
  let $newBody;
-var mymap = L.map('mapid').setView([40.6677, -73.9947], 13);
+//var mymap = L.map('mapid').setView([40.6677, -73.9947], 13);
+// making this generic and have it detect the user's location.
+
+var mymap = L.map('mapid').fitWorld();
+
 
 L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
     attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
@@ -32,7 +37,39 @@ L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_toke
     accessToken: 'pk.eyJ1IjoidHkxODg4MSIsImEiOiJjazYyeHJ6N2owaTV5M2xtbXNvOTVxcmtuIn0.uOgry8Bn_ka1aici0x-7aw'
 }).addTo(mymap);
 
-var marker = L.marker([40.6677, -73.9947]).addTo(mymap);
+// this will prompt user to let us get their location then will set the view to that location.
+mymap.locate({setView: true, maxZoom: 16});
+
+// in case the user doesn't let us get the location data or the 
+// query fails, Leaflet suggested we do this.
+function onLocationFound(e) {
+    var radius = e.accuracy;
+
+    // convert meters to miles
+
+    let engRadius = radius * .000621371;
+
+    // console.log(`auto detected location: ${e.latlng}`);
+    L.marker(e.latlng).addTo(mymap)
+        .bindPopup("You are within " + engRadius + " miles from this point").openPopup();
+
+    L.circle(e.latlng, radius).addTo(mymap);
+}
+
+mymap.on('locationfound', onLocationFound);
+
+function onLocationError(e) {
+    alert(e.message + " Defaulting to NYC City Hall");
+
+    // default the location to NYC city hall.
+    mymap.setView([40.713340, -74.003670], 16);
+    L.marker([40.713340, -74.003670]).addTo(mymap);
+    selectedBorough = "M";
+}
+
+mymap.on('locationerror', onLocationError);
+
+// var marker = L.marker([40.6677, -73.9947]).addTo(mymap);
 
 
 // this function will calculate the distance between our starting point and 
@@ -60,7 +97,7 @@ const calcDistance = (latitude, longitude) => {
 
     // var distance = Math.sqrt(x*x + y*y) * radiusOfEarth;
 
-    var distance = Math.sqrt(x*x + y*y);
+    var distance = Math.sqrt(x*x + y*y) * radius;
 
     console.log(`distance calculated = ${distance}`);
     return distance;
@@ -95,7 +132,7 @@ const isInRange = (element) => {
  */
 const markTheMap = (element) => {
 
-    var marker = L.marker([element.latitude, element.longitude]).addTo(mymap);
+    var marker = L.marker([element.latitude, element.longitude], {opacity: 0.5, title: element.garden_name}).addTo(mymap);
     // 2020.02.01 - add garden name to the tooltip that pops up.
 }
 
@@ -103,9 +140,10 @@ const markTheMap = (element) => {
 // adds the table to the DOM as well.
 
 const buildTableStructure = () => {
-    $tableDiv = $("<div>").addClass("greenspace-table");
-    $newTable = $("<table>");
-    $tableCaption = $("<caption>").text("Nearby Greenspaces");
+    // container and table class designations to take advantage of Bootstrap styling.
+    $tableDiv = $("<div>").addClass("greenspace-table", "container");
+    $newTable = $("<table>").addClass("table", "table-condensed");
+    $tableCaption = $("<caption>").text("Nearby Greenspaces").addClass("caption");
     let $tableHeader = $("<thead>").addClass("column-header");
 
     // make row that holds the column headings
@@ -165,7 +203,7 @@ const makeGreenspaceTable = (element) => {
  */
 
 $.ajax({
-    url: "https://data.cityofnewyork.us/resource/ajxm-kzmj.json?boro=B&community_board=B07",
+    url: "https://data.cityofnewyork.us/resource/ajxm-kzmj.json?boro=" + selectedBorough,
     type: "GET",
     data: {
       "$limit" : 300
