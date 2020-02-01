@@ -15,8 +15,14 @@ $(()=>{
  const maxRadius = 1;
 
  // empty array to capture the closest green space
+ // initializing up here because I'll need to use the contents in several places
  var closeSpaces;
 
+
+ // these will hold items eventually written to the DOM
+ let $tableDiv;
+ let $newTable;
+ let $newBody;
 var mymap = L.map('mapid').setView([40.6677, -73.9947], 13);
 
 L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
@@ -93,8 +99,67 @@ const markTheMap = (element) => {
     // 2020.02.01 - add garden name to the tooltip that pops up.
 }
 
+// function to build table that holds matrix of greenspaces to be displayed below the map
+// adds the table to the DOM as well.
 
-/** Now we query the API to return the data of interest
+const buildTableStructure = () => {
+    $tableDiv = $("<div>").addClass("greenspace-table");
+    $newTable = $("<table>");
+    $tableCaption = $("<caption>").text("Nearby Greenspaces");
+    let $tableHeader = $("<thead>").addClass("column-header");
+
+    // make row that holds the column headings
+    let $headerRow = $("<tr>");
+    let $firstColumn = $("<th>").text("Space name");
+    let $secondColumn = $("<th>").text("Address");
+    $headerRow.append($firstColumn, $secondColumn);
+
+    // append the header row to the table header
+    $tableHeader.append($headerRow);
+
+    // append the caption and header to the table
+    $newTable.append($tableCaption, $tableHeader);
+
+    // append the new body to the table.  contents will be populated later.
+    $newBody = $("<tbody>").addClass("greenspace-body");
+
+    $newTable.append($newBody);
+
+    // append the table structure to the DIV container
+    $tableDiv.append($newTable);
+
+    // don't forget to append this all to the document body.
+        $("body").append($tableDiv);
+}
+// function to generate divs to hold the matrix of greenspaces below the map
+const makeGreenspaceTable = (element) => {
+    // this list will only include those places deemed closest to the user's current location.
+    /**
+     * <tr>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+	</tr>
+     */
+    
+    let $newRow = $("<tr>"); 
+    let $spaceName = $("<td>").text(element.garden_name);
+    let $spaceAddr = $("<td>").text(element.address);
+
+    $newRow.append($spaceName, $spaceAddr);
+
+    $newBody.append($newRow);
+
+    // append our dynamically generated content to the table div
+    $tableDiv.append($newBody);
+
+}
+
+/** MAIN PROGRAM BEGINS HERE:
+ * Now we query the API to return the data of interest
  * First, let's just prove we can get the data back successfully.
  * Let's limit ourselves to Brooklyn.
  */
@@ -129,6 +194,15 @@ $.ajax({
     // forEach loop with callback to create the markers on the map?
 
     closeSpaces.forEach(markTheMap);
+    
+
+    // BEGIN:  displaying list of greenspaces below the map
+    
+    // build the table structure in the DOM.
+    buildTableStructure();
+
+    // populate the table structure with the data on the spaces we located.
+    closeSpaces.forEach(makeGreenspaceTable);
     
 });
 
