@@ -12,8 +12,12 @@ $(()=>{
  // English units - this is in miles.
  const radiusOfEarth = 3958.8;
 
+ // this is used to determine which greenspaces get displayed
+ // anything further than 1 mile away, won't appear on the map.
  const maxRadius = 1;
 
+ // this is used in calcDistance several times so figured 
+ // we'd have it here.
  const radianFactor = Math.PI / 180;
 
  // empty array to capture the closest green space
@@ -111,15 +115,12 @@ const isInRange = (element) => {
     var currLat = element.latitude;
     var currLong = element.longitude;
 
-    console.log(`Greenspace Location from the object: Latitude: ${element.latitude} Longitude: ${element.longitude}`);
+    // console.log(`Greenspace Location from the object: Latitude: ${element.latitude} Longitude: ${element.longitude}`);
     // calculate the distance between the greenspace and user's current location.
 
     // if no lat and long supplied, return false to the calling program.
     if (currLat != null && currLong != null){
     var distanceFrom = calcDistance(currLat, currLong);
-
-        // 2020.02.01 - Need to return to this.  Got turned around about the units on this calculation.
-        // for right now just using the raw number calculated and not multiplying by feet, yards, miles, etc.
 
         // RETURN TRUE if distance between greenspace and current location < maxRadius.
         if (distanceFrom <= maxRadius){
@@ -141,7 +142,7 @@ const isInRange = (element) => {
 const markTheMap = (element) => {
 
     var marker = L.marker([element.latitude, element.longitude], {opacity: 0.5, title: element.garden_name}).addTo(mymap);
-    // 2020.02.01 - add garden name to the tooltip that pops up.
+    // 2020.02.01 - add garden name to the tooltip that pops up. DONE
 }
 
 // function to build table that holds matrix of greenspaces to be displayed below the map
@@ -220,14 +221,13 @@ $.ajax({
     }
 }).then
     (function(data) {
-//   alert("Retrieved " + data.length + " records from the dataset!");
-//   console.log(data);
+
 
 /**data = an array.  We would like to filter the contents of the array by 
  * distance from our original point.
  */
 
-        console.log(`API Call returns: ${data.length}`);
+        // console.log(`API Call returns: ${data.length}`);
 
      closeSpaces = data.filter(isInRange);
 
@@ -242,8 +242,6 @@ $.ajax({
     // https://leafletjs.com/examples/custom-icons/
 
 
-    // logic to add a marker for each space within the radius
-    // forEach loop with callback to create the markers on the map?
 
     closeSpaces.forEach(markTheMap);
     
