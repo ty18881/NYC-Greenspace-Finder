@@ -12,7 +12,9 @@ $(()=>{
  // English units - this is in miles.
  const radiusOfEarth = 3958.8;
 
- const maxRadius = 0.5;
+ const maxRadius = 1;
+
+ const radianFactor = Math.PI / 180;
 
  // empty array to capture the closest green space
  // initializing up here because I'll need to use the contents in several places
@@ -77,27 +79,22 @@ mymap.on('locationerror', onLocationError);
 
 const calcDistance = (latitude, longitude) => {
     // use Equirectangular Approximation to calculate the approximate distance 
-    // between our starting point and this greenspace.
-    
-    // longitude calculation
-    // the lat and long values are numbers according to the API documentation.
-    // 2020.02.01 - come back and check if we can remove this conversion step later.
+    // between our starting point and this greenspace.   
 
-    // also need to check for blank values as some items in the data set don't have lat and long specified.
+    // all latitude and longitude values must be in RADIANS.  
 
-    var numLatitude = parseFloat(latitude);
-    var numLongitude = parseFloat(longitude);
-     
+    let myLatInRad = myLatitude * radianFactor;
+    let latInRad = latitude * radianFactor;
 
-    // console.log(`Greenspace Location: Latitude: ${numLatitude} Longitude: ${numLongitude}`);
+    let myLonInRad = myLongitude * radianFactor;
 
-    var x = (myLongitude - numLongitude) * Math.cos((myLatitude + numLatitude)/2);
+    let lonInRad = longitude * radianFactor;
 
-    var y = (myLatitude - numLatitude);
+    var x = (myLonInRad - lonInRad) * Math.cos((myLatInRad + latInRad)/2);
 
-    // var distance = Math.sqrt(x*x + y*y) * radiusOfEarth;
+    var y = (myLatInRad - latInRad);
 
-    var distance = Math.sqrt(x*x + y*y) * radius;
+    var distance = Math.sqrt(x*x + y*y) * radiusOfEarth;
 
     console.log(`distance calculated = ${distance}`);
     return distance;
@@ -117,13 +114,24 @@ const isInRange = (element) => {
     console.log(`Greenspace Location from the object: Latitude: ${element.latitude} Longitude: ${element.longitude}`);
     // calculate the distance between the greenspace and user's current location.
 
+    // if no lat and long supplied, return false to the calling program.
+    if (currLat != null && currLong != null){
     var distanceFrom = calcDistance(currLat, currLong);
 
-    // 2020.02.01 - Need to return to this.  Got turned around about the units on this calculation.
-    // for right now just using the raw number calculated and not multiplying by feet, yards, miles, etc.
+        // 2020.02.01 - Need to return to this.  Got turned around about the units on this calculation.
+        // for right now just using the raw number calculated and not multiplying by feet, yards, miles, etc.
 
-    // RETURN TRUE if distance between greenspace and current location < maxRadius.
-    return distanceFrom <= maxRadius;
+        // RETURN TRUE if distance between greenspace and current location < maxRadius.
+        if (distanceFrom <= maxRadius){
+            console.log(`Found one inside the radius`);
+            return true;
+        } else {
+            return false;
+        }
+    } else{
+        return false;
+}
+    
 }
 
 /** PURPOSE:  Add new markers to our existing map object.
@@ -169,6 +177,8 @@ const buildTableStructure = () => {
     // don't forget to append this all to the document body.
         $("body").append($tableDiv);
 }
+
+
 // function to generate divs to hold the matrix of greenspaces below the map
 const makeGreenspaceTable = (element) => {
     // this list will only include those places deemed closest to the user's current location.
@@ -217,8 +227,12 @@ $.ajax({
  * distance from our original point.
  */
 
+        console.log(`API Call returns: ${data.length}`);
+
      closeSpaces = data.filter(isInRange);
-     console.log(closeSpaces);
+
+     console.log(`Filtered Array has # ${closeSpaces.length} items`);
+    //  console.log(closeSpaces);
   
      // we have an array with just the spaces within the desired radius.
      // need to display them on our map.
