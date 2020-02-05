@@ -16,5 +16,9 @@ The following technologies and frameworks are used in this project:
 7.  jQuery
 8.  Mapbox
 
+## Development Approach
+I first sketched out a rough wireframe.
+Then I divided the back-end functions into modules starting with the map rendering and API call as these were the elements with which I was least familiar.
+
 ## Installation Instructions
 No special install is required but you will need an internet connection to use the application
