@@ -28,7 +28,7 @@ The following technologies and frameworks are used in this project:
 - Add responsive design elements
 - Distinguish between user's location and the greenspaces in range on the map.
 
-![Greenspace Wireframe](images/2020.01.31 - Greenspace Wireframe.jpg)
+![Greenspace Wireframe](/images/2020.01.31 - Greenspace Wireframe.jpg)
 
 ## Installation Instructions
 No special install is required but you will need an internet connection to use the application
