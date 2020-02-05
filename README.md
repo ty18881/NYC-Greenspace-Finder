@@ -31,3 +31,8 @@ The following technologies and frameworks are used in this project:
 
 ## Installation Instructions
 No special install is required but you will need an internet connection to use the application
+
+## Unsolved Problems or Wonky Things
+1.  Use of setTimeout to force a pause before the API call executes.  This ensures the location finder method completes before the API call begins.
+- this may result in poor performance on slower internet connections because the pre-set timeout might not be long enough.
+2.  Slower response for users outside of Brooklyn or Manhattan since the dataset returned by the API won't be filtered by borough.
