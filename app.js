@@ -21,6 +21,8 @@ $(()=>{
 
  let selectedBorough = "B";
 
+ let baseURL = "https://data.cityofnewyork.us/resource/ajxm-kzmj.json";
+
  // these will hold items eventually written to the DOM
  let $tableDiv;
  let $newTable;
@@ -259,10 +261,10 @@ const makeGreenspaceTable = (element) => {
 
    
      $.ajax({
-            url: "https://data.cityofnewyork.us/resource/ajxm-kzmj.json?boro=" + selectedBorough,
+            url: baseURL,
             type: "GET",
             data: {
-            "$limit" : 300
+            "$limit" : 600
             }
     }).then
             (function(data) {
@@ -299,6 +301,6 @@ const makeGreenspaceTable = (element) => {
     
             }); // end of AJAX call
 
-        }, 5000); // end of the pause before executing the API call.
+        }, 4000); // end of the pause before executing the API call.
 
 }); // end of document ready block.
