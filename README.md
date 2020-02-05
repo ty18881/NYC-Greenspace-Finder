@@ -19,13 +19,13 @@ The following technologies and frameworks are used in this project:
 ## Development Approach
 1. Sketch out a wireframe.
 2. Divide functionality into modules
--[x] Render Map on screen and set user's location at the center.
--[x] Execute API query, iterate through data and render icons for each greenspace within range.
--[x] Populate table of addresses on the screen
--[x] Display photo carousel
--[x] Style the address table
--[x] Add responsive design elements
--[x] Distinguish between user's location and the greenspaces in range on the map.
+- Render Map on screen and set user's location at the center.
+- Execute API query, iterate through data and render icons for each greenspace within range.
+- Populate table of addresses on the screen
+- Display photo carousel
+- Style the address table
+- Add responsive design elements
+- Distinguish between user's location and the greenspaces in range on the map.
 
 
 ## Installation Instructions
