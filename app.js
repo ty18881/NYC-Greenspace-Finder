@@ -69,7 +69,7 @@ const buildMap = () => {
             console.log(`Detected Longitude: ${myLongitude}`);
             // convert meters to miles
 
-            let engRadius = radius * .000621371;
+            let engRadius = (Math.round((radius * .000621371) * 100)) / 100;
 
             // console.log(`auto detected location: ${e.latlng}`);
             L.marker(e.latlng).addTo(myMap)
