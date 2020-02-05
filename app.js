@@ -1,13 +1,8 @@
-console.log("JS is connected up");
 
 $(()=>{
 
-/**Build the map when the page loads.  Default to my home location
- * Code courtesy of Leaflet tutorial
- */
-
- const myLatitude = 40.6677;
- const myLongitude = -73.9947;
+ let myLatitude = 0;
+ let myLongitude = 0;
 
  // English units - this is in miles.
  const radiusOfEarth = 3958.8;
@@ -30,56 +25,94 @@ $(()=>{
  let $tableDiv;
  let $newTable;
  let $newBody;
-//var mymap = L.map('mapid').setView([40.6677, -73.9947], 13);
-// making this generic and have it detect the user's location.
-
-var mymap = L.map('mapid').fitWorld();
+ let myMap;
 
 
-L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
-    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-    maxZoom: 18,
-    id: 'mapbox/streets-v11',
-    accessToken: 'pk.eyJ1IjoidHkxODg4MSIsImEiOiJjazYyeHJ6N2owaTV5M2xtbXNvOTVxcmtuIn0.uOgry8Bn_ka1aici0x-7aw'
-}).addTo(mymap);
+/**
+ * Helper Functions
+ */
 
-// this will prompt user to let us get their location then will set the view to that location.
-mymap.locate({setView: true, maxZoom: 16});
-
-// in case the user doesn't let us get the location data or the 
-// query fails, Leaflet suggested we do this.
-function onLocationFound(e) {
-    var radius = e.accuracy;
-
-    // convert meters to miles
-
-    let engRadius = radius * .000621371;
-
-    // console.log(`auto detected location: ${e.latlng}`);
-    L.marker(e.latlng).addTo(mymap)
-        .bindPopup("You are within " + engRadius + " miles from this point").openPopup();
-
-    L.circle(e.latlng, radius).addTo(mymap);
-}
-
-mymap.on('locationfound', onLocationFound);
-
-function onLocationError(e) {
-    alert(e.message + " Defaulting to NYC City Hall");
-
-    // default the location to NYC city hall.
-    mymap.setView([40.713340, -74.003670], 16);
-    L.marker([40.713340, -74.003670]).addTo(mymap);
-    selectedBorough = "M";
-}
-
-mymap.on('locationerror', onLocationError);
-
-// var marker = L.marker([40.6677, -73.9947]).addTo(mymap);
+/** buildMap
+ * PURPOSE: 
+ * Build the map when the page loads.  Default to my home location
+ * Code courtesy of Leaflet tutorial
+ * https://leafletjs.com/examples/mobile/
+ */
+const buildMap = () => {
 
 
-// this function will calculate the distance between our starting point and 
-// the greenspace returned from the API.
+            // render the whole world by default.
+         myMap = L.map('mapid').fitWorld();
+
+
+        L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+            maxZoom: 18,
+            id: 'mapbox/streets-v11',
+            accessToken: 'pk.eyJ1IjoidHkxODg4MSIsImEiOiJjazYyeHJ6N2owaTV5M2xtbXNvOTVxcmtuIn0.uOgry8Bn_ka1aici0x-7aw'
+        }).addTo(myMap);
+
+        // this will prompt user to let us get their location then will set the view to that location.
+        myMap.locate({setView: true, maxZoom: 16});
+
+        // in case the user doesn't let us get the location data or the 
+        // query fails, Leaflet suggested we do this.
+        function onLocationFound(e) {
+            var radius = e.accuracy;
+
+            myLatitude = e.latlng.lat;
+            myLongitude = e.latlng.lng;
+
+            console.log(`Detected Latitude: ${myLatitude}`);
+            console.log(`Detected Longitude: ${myLongitude}`);
+            // convert meters to miles
+
+            let engRadius = radius * .000621371;
+
+            // console.log(`auto detected location: ${e.latlng}`);
+            L.marker(e.latlng).addTo(myMap)
+                .bindPopup("You are within " + engRadius + " miles from this point").openPopup();
+
+            L.circle(e.latlng, radius).addTo(myMap);
+            // console.log(`Detected: latitude ${e.latlng.lat} longitude: ${e.latlng.lng}`);
+            
+
+        }
+
+        // if the location is detected as expected, pinpoint it on the map.
+        myMap.on('locationfound', onLocationFound);
+
+        function onLocationError(e) {
+            alert(e.message + " Defaulting to NYC City Hall");
+
+            myLatitude = 40.713340;
+            myLongitude = -74.003670;
+
+            // default the location to NYC city hall.
+            // center the map on that location
+            // add a marker to the location
+            // set the latitude and longitude coordinates used later to 
+            // city hall.
+            // set borough indicator to Manhattan.
+
+            myMap.setView([myLatitude, myLongitude], 16);
+            L.marker([myLatitude, myLongitude]).addTo(myMap);
+            selectedBorough = "M";
+           
+        }
+
+// if the location is not found or user denies the location sharing request, execute
+// this function to set a default location.
+
+                myMap.on('locationerror', onLocationError);
+      
+
+} // end building the map.
+/** calcDistance
+ * PURPOSE:  this function will calculate the distance between our starting point and 
+ * the greenspace returned from the API.
+ */
+
 
 const calcDistance = (latitude, longitude) => {
     // use Equirectangular Approximation to calculate the approximate distance 
@@ -100,13 +133,17 @@ const calcDistance = (latitude, longitude) => {
 
     var distance = Math.sqrt(x*x + y*y) * radiusOfEarth;
 
-    console.log(`distance calculated = ${distance}`);
+    // console.log(`distance calculated = ${distance}`);
     return distance;
      
 }
-
+/** isInRange:
+ * PURPOSE:  Returns boolean that indicates if the particular
+ * greenspace is within the desired range of the current 
+ * location.
+ */
 const isInRange = (element) => {
-    console.log(`checking distance from ${myLatitude} ${myLongitude}`);
+    // console.log(`checking distance from ${myLatitude} ${myLongitude}`);
     
     // get the latitude and longitude values for the greenspace object in the array.
     // 2020.02.01 - if these values are not in the dataset, could we calculate them on the fly using
@@ -124,7 +161,7 @@ const isInRange = (element) => {
 
         // RETURN TRUE if distance between greenspace and current location < maxRadius.
         if (distanceFrom <= maxRadius){
-            console.log(`Found one inside the radius`);
+            // console.log(`Found one inside the radius`);
             return true;
         } else {
             return false;
@@ -135,18 +172,21 @@ const isInRange = (element) => {
     
 }
 
-/** PURPOSE:  Add new markers to our existing map object.
+/** markTheMap:
+ * PURPOSE:  Add new markers to our existing map object.
  * callback function for a forEach call against the array of greenspaces
  * within the specified range.
  */
 const markTheMap = (element) => {
 
-    var marker = L.marker([element.latitude, element.longitude], {opacity: 0.5, title: element.garden_name}).addTo(mymap);
+    var marker = L.marker([element.latitude, element.longitude], {opacity: 0.5, title: element.garden_name}).addTo(myMap);
     // 2020.02.01 - add garden name to the tooltip that pops up. DONE
 }
 
-// function to build table that holds matrix of greenspaces to be displayed below the map
-// adds the table to the DOM as well.
+/* buildTableStructure:
+* function to build table that holds matrix of greenspaces to be displayed below the map
+*  adds the table to the DOM as well.
+*/
 
 const buildTableStructure = () => {
     // container and table class designations to take advantage of Bootstrap styling.
@@ -180,20 +220,13 @@ const buildTableStructure = () => {
 }
 
 
-// function to generate divs to hold the matrix of greenspaces below the map
+/*
+* makeGreenspaceTable:  
+*  function to generate divs to hold the matrix of greenspaces below the map
+*/
 const makeGreenspaceTable = (element) => {
     // this list will only include those places deemed closest to the user's current location.
-    /**
-     * <tr>
-		<td>&nbsp;</td>
-		<td>&nbsp;</td>
-	</tr>
-	<tr>
-		<td>&nbsp;</td>
-		<td>&nbsp;</td>
-	</tr>
-     */
-    
+        
     let $newRow = $("<tr>"); 
     let $spaceName = $("<td>").text(element.garden_name);
     let $spaceAddr = $("<td>").text(element.address);
@@ -213,26 +246,36 @@ const makeGreenspaceTable = (element) => {
  * Let's limit ourselves to Brooklyn.
  */
 
-$.ajax({
-    url: "https://data.cityofnewyork.us/resource/ajxm-kzmj.json?boro=" + selectedBorough,
-    type: "GET",
-    data: {
-      "$limit" : 300
-    }
-}).then
-    (function(data) {
+ // render the map. 
+ // when the map signals ready, then call the API and the remainder of the program.
+
+    buildMap();
+    // whenReady doesn't work because the setting of lat and lng happens
+    // after the map has the layer, i.e. before we examine
+    // the event returned from the geolocation and grab the lat and lng.
 
 
-/**data = an array.  We would like to filter the contents of the array by 
- * distance from our original point.
- */
+    setTimeout(function(){    
 
-        // console.log(`API Call returns: ${data.length}`);
+   
+     $.ajax({
+            url: "https://data.cityofnewyork.us/resource/ajxm-kzmj.json?boro=" + selectedBorough,
+            type: "GET",
+            data: {
+            "$limit" : 300
+            }
+    }).then
+            (function(data) {
 
-     closeSpaces = data.filter(isInRange);
 
-     console.log(`Filtered Array has # ${closeSpaces.length} items`);
-    //  console.log(closeSpaces);
+                /**data = an array.  We would like to filter the contents of the array by 
+                 * distance from our original point.
+                 */
+
+                closeSpaces = data.filter(isInRange);
+
+                console.log(`Filtered Array has # ${closeSpaces.length} items`);
+    
   
      // we have an array with just the spaces within the desired radius.
      // need to display them on our map.
@@ -243,17 +286,19 @@ $.ajax({
 
 
 
-    closeSpaces.forEach(markTheMap);
+                closeSpaces.forEach(markTheMap);
     
 
-    // BEGIN:  displaying list of greenspaces below the map
-    
-    // build the table structure in the DOM.
-    buildTableStructure();
+                // BEGIN:  displaying list of greenspaces below the map
+                
+                // build the table structure in the DOM.
+                buildTableStructure();
 
-    // populate the table structure with the data on the spaces we located.
-    closeSpaces.forEach(makeGreenspaceTable);
+                // populate the table structure with the data on the spaces we located.
+                closeSpaces.forEach(makeGreenspaceTable);
     
-});
+            }); // end of AJAX call
 
-});
+        }, 5000); // end of the pause before executing the API call.
+
+}); // end of document ready block.
