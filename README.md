@@ -4,6 +4,7 @@ This application locates New York City Community Gardens that participate in the
 The program uses data provide by NYC Open Data APIs.
 
 ## URL for the NYC Greenspace Finder
+https://ty18881.github.io/NYC-Greenspace-Finder/
 
 ## Technologies and Frameworks
 The following technologies and frameworks are used in this project:
