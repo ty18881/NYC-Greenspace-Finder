@@ -17,8 +17,16 @@ The following technologies and frameworks are used in this project:
 8.  Mapbox
 
 ## Development Approach
-I first sketched out a rough wireframe.
-Then I divided the back-end functions into modules starting with the map rendering and API call as these were the elements with which I was least familiar.
+1. Sketch out a wireframe.
+2. Divide functionality into modules
+-[x] Render Map on screen and set user's location at the center.
+-[x] Execute API query, iterate through data and render icons for each greenspace within range.
+-[x] Populate table of addresses on the screen
+-[x] Display photo carousel
+-[x] Style the address table
+-[x] Add responsive design elements
+-[x] Distinguish between user's location and the greenspaces in range on the map.
+
 
 ## Installation Instructions
 No special install is required but you will need an internet connection to use the application
